@@ -1,4 +1,4 @@
-package filegen
+package gen
 
 import (
 	"golang.org/x/net/html"
@@ -41,7 +41,6 @@ func ToClassName(name string) string {
 	return strings.ToUpper(string(name[2])) + name[3:] + "ValidatorDirective"
 }
 func ToImport(name string) string {
-
 	return name[:len(name)-3]
 }
 
