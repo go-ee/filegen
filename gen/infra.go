@@ -46,7 +46,7 @@ type DefaultsOutputFileNameBuilder struct {
 }
 
 func (o *DefaultsOutputFileNameBuilder) BuildOutputFileName(templateLabel string) string {
-	fileName := strings.TrimSuffix(templateLabel, filepath.Ext(templateLabel)) + o.DefaultExtension
+	fileName := strings.TrimSuffix(filepath.Base(templateLabel), filepath.Ext(templateLabel)) + o.DefaultExtension
 	return o.BuildOutputFileNameForFileName(templateLabel, fileName)
 }
 
