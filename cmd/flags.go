@@ -1,40 +1,31 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/pflag"
+)
 
-func FlagDataFile(command *cobra.Command, p *string, required bool) {
-	flagName := "dataFile"
-	command.Flags().StringVarP(p, flagName, "d", "", "json or yaml data file")
-	markFlagRequiredIfTrue(command, flagName, required)
+func FlagDataFile(flagSet *pflag.FlagSet, p *string) (flagName string) {
+	flagName = "data-file"
+	flagSet.StringVarP(p, flagName, "d", "", "json or yaml data file")
+	return
 }
 
-func FlagTemplateFile(command *cobra.Command, p *string, required bool) {
-	flagName := "templateFile"
-	command.Flags().StringVarP(p, flagName, "t", "", "go template file")
-	markFlagRequiredIfTrue(command, flagName, required)
+func FlagTemplateFile(flagSet *pflag.FlagSet, p *string) (flagName string) {
+	flagName = "template-file"
+	flagSet.StringVarP(p, flagName, "t", "", "go template file")
+	return
 }
 
-func FlagOutputDir(command *cobra.Command, p *string, required bool) {
-	flagName := "outputDir"
-	command.Flags().StringVarP(p, flagName, "o", ".", "output directory")
-	markFlagRequiredIfTrue(command, flagName, required)
+func FlagOutputPath(flagSet *pflag.FlagSet, p *string) (flagName string) {
+	flagName = "output-path"
+	flagSet.StringVarP(p, flagName, "o", "",
+		"output path or relative path to 'output-dir-on-template' or 'output-dir-on-data'")
+	return
 }
 
-func FlagOutputFileExt(command *cobra.Command, p *string, required bool) {
-	flagName := "outputFileExt"
-	command.Flags().StringVarP(p, flagName, "e", "txt", "file extension for generated file")
-	markFlagRequiredIfTrue(command, flagName, required)
-}
-
-func FlagMulti(command *cobra.Command, p *bool, required bool) {
+func FlagMulti(flagSet *pflag.FlagSet, p *bool) {
 	flagName := "multi"
-	command.Flags().BoolVarP(p, flagName, "m", false,
+	flagSet.BoolVarP(p, flagName, "m", false,
 		"generates one file for each File object in Json (or Yaml) data file")
-	markFlagRequiredIfTrue(command, flagName, required)
-}
-
-func markFlagRequiredIfTrue(command *cobra.Command, flagName string, required bool) {
-	if required {
-		_ = command.MarkFlagRequired(flagName)
-	}
+	return
 }

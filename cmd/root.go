@@ -24,40 +24,39 @@ package cmd
 import (
 	"fmt"
 	"github.com/go-ee/filegen/gen"
-	"os"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"os"
 )
 
 var cfgFile string
-var dataFileName string
+var dataFile string
 var templateFileName string
-var outputDirectory string
-var outputFileExtension string
+var outputPath string
+var outputOnData = false
+var outputOnTemplate = false
 var multipleFiles bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "filegen",
 	Short: "File generation based on Go templates",
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
+
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
-		generator := &gen.Generator{
-			OutputFileNameBuilder: &gen.DefaultsOutputFileNameBuilder{
-				OutputDirectory: outputDirectory, DefaultExtension: outputFileExtension},
-			TemplateDataLoader: &gen.FileTemplateDataLoader{
-				FileName: dataFileName,
-			},
-			TemplateFactory: &gen.FileTemplateFactory{
-				TemplateFile: templateFileName,
-			},
-			HasMultipleFiles: multipleFiles,
-		}
-		err = generator.Generate()
-		return
+		return generate()
 	},
+}
+
+func generate() (err error) {
+	generator := &gen.Generator{
+		FileNameBuilder: &gen.DefaultsFileNameBuilder{
+			OutputPath: outputPath, RelativeToTemplate: outputOnTemplate, RelativeToData: outputOnData},
+		TemplateDataLoader: gen.NewFileTDataLoader(dataFile),
+		TemplateLoader:     gen.NewFileTemplateLoader(templateFileName),
+		HasMultipleFiles:   multipleFiles,
+	}
+	err = generator.Generate()
+	return
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -72,20 +71,16 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.filegen.yaml)")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
+	_ = rootCmd.MarkPersistentFlagRequired(
+		FlagDataFile(rootCmd.PersistentFlags(), &dataFile))
+	_ = rootCmd.MarkPersistentFlagRequired(
+		FlagTemplateFile(rootCmd.PersistentFlags(), &templateFileName))
 
-	FlagDataFile(rootCmd, &dataFileName, true)
-	FlagTemplateFile(rootCmd, &templateFileName, false)
-	FlagOutputDir(rootCmd, &outputDirectory, false)
-	FlagOutputFileExt(rootCmd, &outputFileExtension, false)
-	FlagMulti(rootCmd, &multipleFiles, false)
+	FlagOutputPath(rootCmd.PersistentFlags(), &outputPath)
+
+	FlagMulti(rootCmd.PersistentFlags(), &multipleFiles)
 }
 
 // initConfig reads in config file and ENV variables if set.

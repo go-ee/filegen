@@ -3,8 +3,8 @@ package gen
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"github.com/ghodss/yaml"
+	"github.com/go-ee/utils/lg"
 	"os"
 	"path"
 	"text/template"
@@ -12,20 +12,20 @@ import (
 )
 
 type Generator struct {
-	OutputFileNameBuilder
+	FileNameBuilder
 	TemplateDataLoader
-	TemplateFactory
+	TemplateLoader
 	HasMultipleFiles bool
 }
 
 func (o *Generator) Generate() (err error) {
 	var tmpl *template.Template
-	if tmpl, err = o.CreateTemplate(); err != nil {
+	if tmpl, err = o.LoadTemplate(); err != nil {
 		return
 	}
 
 	var byteValue []byte
-	if byteValue, err = o.LoadTemplateData(); err != nil {
+	if byteValue, err = o.LoadData(); err != nil {
 		return
 	}
 
@@ -44,10 +44,13 @@ func (o *Generator) generateMultipleFiles(tmpl *template.Template, byteValue []b
 		return
 	}
 
-	for _, outputFile := range multiFileData.Files {
-		data := outputFile.Data
-		outputFileName := o.BuildOutputFileNameForFileName(o.TemplateLabel(), outputFile.FileName)
-		if err = generateFile(tmpl, outputFileName, data); err != nil {
+	for _, item := range multiFileData.Files {
+		var outputFile string
+		if outputFile, err = o.BuildFilePath(o.TemplateLabel(), o.DataLabel(), item.FileName); err != nil {
+			return
+		}
+
+		if err = generateFile(tmpl, outputFile, item.Data); err != nil {
 			return
 		}
 	}
@@ -59,12 +62,16 @@ func (o *Generator) generateSingleFile(tmpl *template.Template, byteValue []byte
 	if err = json.Unmarshal(byteValue, &data); err != nil {
 		return
 	}
-	outputFileName := o.BuildOutputFileName(o.TemplateLabel())
-	err = generateFile(tmpl, outputFileName, data)
+	var outputFile string
+	if outputFile, err = o.BuildFilePathDynamic(o.TemplateLabel(), o.DataLabel()); err != nil {
+		return
+	}
+	err = generateFile(tmpl, outputFile, data)
 	return
 }
 
 func generateFile(template *template.Template, outputFileName string, data interface{}) (err error) {
+	lg.LOG.Infof("generate '%v'", outputFileName)
 	if err = os.MkdirAll(path.Dir(outputFileName), os.ModePerm); err != nil {
 		return
 	}
@@ -74,13 +81,7 @@ func generateFile(template *template.Template, outputFileName string, data inter
 		return
 	}
 	defer file.Close()
-	if err != nil {
-		fmt.Println(err)
-	}
 	err = template.Execute(file, data)
-	if err != nil {
-		fmt.Println(err)
-	}
 	return
 }
 
