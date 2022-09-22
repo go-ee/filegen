@@ -1,7 +1,9 @@
 package gen
 
 import (
+	"io/fs"
 	"os"
+	"path/filepath"
 )
 
 type TemplateDataLoader interface {
@@ -9,36 +11,44 @@ type TemplateDataLoader interface {
 	LoadData() ([]byte, error)
 }
 
-func NewFileDataLoader(dataFile string) *FileDataLoader {
-	return &FileDataLoader{
+func NewJsonFileDataLoader(dataFile string) *JsonFileDataLoader {
+	return &JsonFileDataLoader{
 		File: dataFile,
 	}
 }
 
-type FileDataLoader struct {
+type JsonFileDataLoader struct {
 	File string
 }
 
-func (o *FileDataLoader) DataSource() string {
+func (o *JsonFileDataLoader) DataSource() string {
 	return o.File
 }
 
-func (o *FileDataLoader) LoadData() (ret []byte, err error) {
+func (o *JsonFileDataLoader) LoadData() (ret []byte, err error) {
 	if ret, err = os.ReadFile(o.File); err == nil {
 		ret, err = ToJSON(ret)
 	}
 	return
 }
 
-type SingleNextProvider[T any] struct {
-	Item             T
-	alreadyDelivered bool
+func CollectFilesRecursive(baseFile string) (ret []string, err error) {
+	ret = []string{}
+	fileName := filepath.Base(baseFile)
+	baseFolder := filepath.Dir(baseFile)
+	err = filepath.Walk(baseFolder, func(path string, info fs.FileInfo, err error) (walkErr error) {
+		if !info.IsDir() && info.Name() == fileName {
+			ret = append(ret, path)
+		}
+		return
+	})
+	return
 }
 
-func (o *SingleNextProvider[T]) Next() (ret T) {
-	if !o.alreadyDelivered {
-		o.alreadyDelivered = true
-		ret = o.Item
+func FilesToTemplateDataLoaders(templateDataFiles []string) (ret []TemplateDataLoader) {
+	ret = make([]TemplateDataLoader, len(templateDataFiles))
+	for i, file := range templateDataFiles {
+		ret[i] = NewJsonFileDataLoader(file)
 	}
 	return
 }

@@ -32,15 +32,15 @@ import (
 var cfgFile string
 var dataFile string
 var dataFileRecursive = false
-var templateFileName string
+var templateFiles []string
 var outputPath string
-var outputOnData = false
-var outputOnTemplate = false
+var outputRelativeToData = false
+var outputRelativeToTemplate = false
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "filegen",
-	Short: "File generation based on Go templates",
+	Short: "File generation based on Go templateFiles",
 
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		return generate()
@@ -48,20 +48,32 @@ var rootCmd = &cobra.Command{
 }
 
 func generate() (err error) {
-
-	templateLoaderProvider := gen.SingleNextProvider[gen.TemplateLoader]{
-		Item: gen.NewFileTemplateLoader(templateFileName),
+	templateLoaderProvider := gen.ArrayNextProvider[gen.TemplateLoader]{
+		Items: gen.FilesToTemplateLoaders(templateFiles),
 	}
-	templateDataLoaderProvider := gen.SingleNextProvider[gen.TemplateDataLoader]{
-		Item: gen.NewFileDataLoader(dataFile),
+	var dataFiles []string
+	if dataFiles, err = collectDataFiles(); err != nil {
+		return
+	}
+	templateDataLoaderProvider := gen.ArrayNextProvider[gen.TemplateDataLoader]{
+		Items: gen.FilesToTemplateDataLoaders(dataFiles),
 	}
 	generator := &gen.Generator{
 		FileNameBuilder: &gen.DefaultsFileNameBuilder{
-			OutputPath: outputPath, RelativeToTemplate: outputOnTemplate, RelativeToData: outputOnData},
+			OutputPath: outputPath, RelativeToTemplate: outputRelativeToTemplate, RelativeToData: outputRelativeToData},
 		NextTemplateLoader:     templateLoaderProvider.Next,
 		NextTemplateDataLoader: templateDataLoaderProvider.Next,
 	}
 	err = generator.Generate()
+	return
+}
+
+func collectDataFiles() (ret []string, err error) {
+	if dataFileRecursive {
+		ret, err = gen.CollectFilesRecursive(dataFile)
+	} else {
+		ret = []string{dataFile}
+	}
 	return
 }
 
@@ -82,7 +94,7 @@ func init() {
 	_ = rootCmd.MarkPersistentFlagRequired(
 		FlagDataFile(rootCmd.PersistentFlags(), &dataFile))
 	_ = rootCmd.MarkPersistentFlagRequired(
-		FlagTemplateFile(rootCmd.PersistentFlags(), &templateFileName))
+		FlagTemplateFiles(rootCmd.PersistentFlags(), &templateFiles))
 
 	FlagDataFileRecursive(rootCmd.PersistentFlags(), &dataFileRecursive)
 

@@ -25,15 +25,15 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var relativeToTemplateCmd = &cobra.Command{
-	Use:   "relative-to-template",
-	Short: "generate files relative to template file",
+var relativeToDataCmd = &cobra.Command{
+	Use:   "relative-to-data",
+	Short: "generate files relative to data file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		outputOnTemplate = true
+		outputRelativeToData = true
 		return generate()
 	},
 }
 
 func init() {
-	rootCmd.AddCommand(relativeToTemplateCmd)
+	rootCmd.AddCommand(relativeToDataCmd)
 }

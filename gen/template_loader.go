@@ -30,3 +30,11 @@ func (o *FileTemplateLoader) LoadTemplate() (ret *template.Template, err error) 
 		ParseFiles(o.File)
 	return
 }
+
+func FilesToTemplateLoaders(templateFiles []string) (ret []TemplateLoader) {
+	ret = make([]TemplateLoader, len(templateFiles))
+	for i, file := range templateFiles {
+		ret[i] = NewFileTemplateLoader(file)
+	}
+	return
+}

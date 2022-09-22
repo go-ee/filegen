@@ -5,25 +5,26 @@ import (
 )
 
 func FlagDataFile(flagSet *pflag.FlagSet, p *string) (flagName string) {
-	flagName = "data-file"
+	flagName = "data"
 	flagSet.StringVarP(p, flagName, "d", "", "json or yaml data file")
 	return
 }
 
 func FlagDataFileRecursive(flagSet *pflag.FlagSet, p *bool) (flagName string) {
-	flagName = "data-file-recursive"
+	flagName = "data-recursive"
 	flagSet.BoolVarP(p, flagName, "", dataFileRecursive, "look for the same data file recursive")
 	return
 }
 
-func FlagTemplateFile(flagSet *pflag.FlagSet, p *string) (flagName string) {
-	flagName = "template-file"
-	flagSet.StringVarP(p, flagName, "t", "", "go template file")
+func FlagTemplateFiles(flagSet *pflag.FlagSet, p *[]string) (flagName string) {
+	flagName = "templates"
+	flagSet.StringSliceVarP(p, flagName, "t", nil,
+		"template files, semicolon separated or multiple flags")
 	return
 }
 
 func FlagOutputPath(flagSet *pflag.FlagSet, p *string) (flagName string) {
-	flagName = "output-path"
+	flagName = "output"
 	flagSet.StringVarP(p, flagName, "o", "",
 		"output path or relative path to 'output-dir-on-template' or 'output-dir-on-data'")
 	return
