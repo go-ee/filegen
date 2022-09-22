@@ -16,10 +16,17 @@ func FlagDataFileRecursive(flagSet *pflag.FlagSet, p *bool) (flagName string) {
 	return
 }
 
+func FlagMacrosTemplatesFiles(flagSet *pflag.FlagSet, p *[]string) (flagName string) {
+	flagName = "macros"
+	flagSet.StringSliceVarP(p, flagName, "m", nil,
+		"macros, template files reused by main templates (semicolon separated or multiple flags)")
+	return
+}
+
 func FlagTemplateFiles(flagSet *pflag.FlagSet, p *[]string) (flagName string) {
 	flagName = "templates"
 	flagSet.StringSliceVarP(p, flagName, "t", nil,
-		"template files, semicolon separated or multiple flags")
+		"template files (semicolon separated or multiple flags)")
 	return
 }
 

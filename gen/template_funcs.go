@@ -1,20 +1,22 @@
 package gen
 
 import (
+	"errors"
 	"golang.org/x/net/html"
 	"strings"
 )
 
 var FuncMap = map[string]interface{}{
-	"ToLower":      strings.ToLower,
-	"ToUpper":      strings.ToUpper,
-	"ToGetterName": ToGetterName,
-	"ToSetterName": ToSetterName,
-	"ToSelector":   ToSelector,
-	"ToClassName":  ToClassName,
+	"toLower":      strings.ToLower,
+	"toUpper":      strings.ToUpper,
+	"toGetterName": ToGetterName,
+	"toSetterName": ToSetterName,
+	"toSelector":   ToSelector,
+	"toClassName":  ToClassName,
 	"escapeHtml":   EscapeHtml,
 	"escapeQuote":  EscapeQuote,
-	"ToImport":     ToImport,
+	"toImport":     ToImport,
+	"dict":         Dict,
 }
 
 func ToGetterName(name string) string {
@@ -47,6 +49,22 @@ func ToImport(name string) string {
 func EscapeHtml(name string) string {
 	return html.EscapeString(name)
 }
+
 func EscapeQuote(name string) string {
 	return strings.Replace(name, "'", "\\'", 1)
+}
+
+func Dict(values ...interface{}) (map[string]interface{}, error) {
+	if len(values)%2 != 0 {
+		return nil, errors.New("invalid dict call")
+	}
+	dict := make(map[string]interface{}, len(values)/2)
+	for i := 0; i < len(values); i += 2 {
+		key, ok := values[i].(string)
+		if !ok {
+			return nil, errors.New("dict keys must be strings")
+		}
+		dict[key] = values[i+1]
+	}
+	return dict, nil
 }

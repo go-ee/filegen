@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-type TemplateDataLoader interface {
+type DataLoader interface {
 	DataSource() string
 	LoadData() ([]byte, error)
 }
@@ -45,8 +45,8 @@ func CollectFilesRecursive(baseFile string) (ret []string, err error) {
 	return
 }
 
-func FilesToTemplateDataLoaders(templateDataFiles []string) (ret []TemplateDataLoader) {
-	ret = make([]TemplateDataLoader, len(templateDataFiles))
+func FilesToTemplateDataLoaders(templateDataFiles []string) (ret []DataLoader) {
+	ret = make([]DataLoader, len(templateDataFiles))
 	for i, file := range templateDataFiles {
 		ret[i] = NewJsonFileDataLoader(file)
 	}

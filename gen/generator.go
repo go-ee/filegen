@@ -13,27 +13,28 @@ import (
 
 type Generator struct {
 	FileNameBuilder
-	NextTemplateLoader     func() TemplateLoader
-	NextTemplateDataLoader func() TemplateDataLoader
+	NextTemplateLoader     NextProvider[TemplateLoader]
+	NextTemplateDataLoader NextProvider[DataLoader]
 }
 
 func (o *Generator) Generate() (err error) {
-	templateLoader := o.NextTemplateLoader()
+	templateLoader := o.NextTemplateLoader.Next()
 	for templateLoader != nil {
-		templateDataLoader := o.NextTemplateDataLoader()
+		templateDataLoader := o.NextTemplateDataLoader.Next()
 		for templateDataLoader != nil {
 			if err = o.resolveAndGenerate(templateLoader, templateDataLoader); err != nil {
 				return
 			}
-			templateDataLoader = o.NextTemplateDataLoader()
+			templateDataLoader = o.NextTemplateDataLoader.Next()
 		}
-		templateLoader = o.NextTemplateLoader()
+		o.NextTemplateDataLoader.Reset()
+		templateLoader = o.NextTemplateLoader.Next()
 	}
 	return
 }
 
 func (o *Generator) resolveAndGenerate(
-	templateLoader TemplateLoader, templateDataLoader TemplateDataLoader) (err error) {
+	templateLoader TemplateLoader, templateDataLoader DataLoader) (err error) {
 
 	var tmpl *template.Template
 	if tmpl, err = templateLoader.LoadTemplate(); err != nil {
@@ -58,8 +59,7 @@ func (o *Generator) resolveAndGenerate(
 	return
 }
 
-func generateFile(template *template.Template, outputFileName string, data interface{}) (err error) {
-	lg.LOG.Infof("resolveAndGenerate '%v'", outputFileName)
+func generateFile(tmpl *template.Template, outputFileName string, data interface{}) (err error) {
 	if err = os.MkdirAll(path.Dir(outputFileName), os.ModePerm); err != nil {
 		return
 	}
@@ -69,7 +69,9 @@ func generateFile(template *template.Template, outputFileName string, data inter
 		return
 	}
 	defer file.Close()
-	err = template.Execute(file, data)
+
+	lg.LOG.Infof("generate: %v", outputFileName)
+	err = tmpl.Execute(file, data)
 	return
 }
 

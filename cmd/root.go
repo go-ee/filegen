@@ -33,6 +33,7 @@ var cfgFile string
 var dataFile string
 var dataFileRecursive = false
 var templateFiles []string
+var macrosTemplateFiles []string
 var outputPath string
 var outputRelativeToData = false
 var outputRelativeToTemplate = false
@@ -48,21 +49,23 @@ var rootCmd = &cobra.Command{
 }
 
 func generate() (err error) {
-	templateLoaderProvider := gen.ArrayNextProvider[gen.TemplateLoader]{
-		Items: gen.FilesToTemplateLoaders(templateFiles),
+	var templateProvider *gen.NextTemplateProvider
+	if templateProvider, err = gen.NewNextTemplateProvider(templateFiles, macrosTemplateFiles); err != nil {
+		return
 	}
+
 	var dataFiles []string
 	if dataFiles, err = collectDataFiles(); err != nil {
 		return
 	}
-	templateDataLoaderProvider := gen.ArrayNextProvider[gen.TemplateDataLoader]{
+	templateDataProvider := &gen.ArrayNextProvider[gen.DataLoader]{
 		Items: gen.FilesToTemplateDataLoaders(dataFiles),
 	}
 	generator := &gen.Generator{
 		FileNameBuilder: &gen.DefaultsFileNameBuilder{
 			OutputPath: outputPath, RelativeToTemplate: outputRelativeToTemplate, RelativeToData: outputRelativeToData},
-		NextTemplateLoader:     templateLoaderProvider.Next,
-		NextTemplateDataLoader: templateDataLoaderProvider.Next,
+		NextTemplateLoader:     templateProvider,
+		NextTemplateDataLoader: templateDataProvider,
 	}
 	err = generator.Generate()
 	return
@@ -96,6 +99,7 @@ func init() {
 	_ = rootCmd.MarkPersistentFlagRequired(
 		FlagTemplateFiles(rootCmd.PersistentFlags(), &templateFiles))
 
+	FlagMacrosTemplatesFiles(rootCmd.PersistentFlags(), &macrosTemplateFiles)
 	FlagDataFileRecursive(rootCmd.PersistentFlags(), &dataFileRecursive)
 
 	FlagOutputPath(rootCmd.PersistentFlags(), &outputPath)
