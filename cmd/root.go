@@ -31,11 +31,11 @@ import (
 
 var cfgFile string
 var dataFile string
+var dataFileRecursive = false
 var templateFileName string
 var outputPath string
 var outputOnData = false
 var outputOnTemplate = false
-var multipleFiles bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -48,12 +48,18 @@ var rootCmd = &cobra.Command{
 }
 
 func generate() (err error) {
+
+	templateLoaderProvider := gen.SingleNextProvider[gen.TemplateLoader]{
+		Item: gen.NewFileTemplateLoader(templateFileName),
+	}
+	templateDataLoaderProvider := gen.SingleNextProvider[gen.TemplateDataLoader]{
+		Item: gen.NewFileDataLoader(dataFile),
+	}
 	generator := &gen.Generator{
 		FileNameBuilder: &gen.DefaultsFileNameBuilder{
 			OutputPath: outputPath, RelativeToTemplate: outputOnTemplate, RelativeToData: outputOnData},
-		TemplateDataLoader: gen.NewFileTDataLoader(dataFile),
-		TemplateLoader:     gen.NewFileTemplateLoader(templateFileName),
-		HasMultipleFiles:   multipleFiles,
+		NextTemplateLoader:     templateLoaderProvider.Next,
+		NextTemplateDataLoader: templateDataLoaderProvider.Next,
 	}
 	err = generator.Generate()
 	return
@@ -78,9 +84,9 @@ func init() {
 	_ = rootCmd.MarkPersistentFlagRequired(
 		FlagTemplateFile(rootCmd.PersistentFlags(), &templateFileName))
 
-	FlagOutputPath(rootCmd.PersistentFlags(), &outputPath)
+	FlagDataFileRecursive(rootCmd.PersistentFlags(), &dataFileRecursive)
 
-	FlagMulti(rootCmd.PersistentFlags(), &multipleFiles)
+	FlagOutputPath(rootCmd.PersistentFlags(), &outputPath)
 }
 
 // initConfig reads in config file and ENV variables if set.

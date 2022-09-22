@@ -7,7 +7,7 @@ import (
 )
 
 type TemplateLoader interface {
-	TemplateLabel() string
+	TemplateSource() string
 	LoadTemplate() (ret *template.Template, err error)
 }
 
@@ -21,7 +21,7 @@ type FileTemplateLoader struct {
 	File string
 }
 
-func (o *FileTemplateLoader) TemplateLabel() string {
+func (o *FileTemplateLoader) TemplateSource() string {
 	return o.File
 }
 

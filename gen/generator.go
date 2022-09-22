@@ -13,57 +13,45 @@ import (
 
 type Generator struct {
 	FileNameBuilder
-	TemplateDataLoader
-	TemplateLoader
-	HasMultipleFiles bool
+	NextTemplateLoader     func() TemplateLoader
+	NextTemplateDataLoader func() TemplateDataLoader
 }
 
 func (o *Generator) Generate() (err error) {
+	templateLoader := o.NextTemplateLoader()
+	for templateLoader != nil {
+		templateDataLoader := o.NextTemplateDataLoader()
+		for templateDataLoader != nil {
+			if err = o.resolveAndGenerate(templateLoader, templateDataLoader); err != nil {
+				return
+			}
+			templateDataLoader = o.NextTemplateDataLoader()
+		}
+		templateLoader = o.NextTemplateLoader()
+	}
+	return
+}
+
+func (o *Generator) resolveAndGenerate(
+	templateLoader TemplateLoader, templateDataLoader TemplateDataLoader) (err error) {
+
 	var tmpl *template.Template
-	if tmpl, err = o.LoadTemplate(); err != nil {
+	if tmpl, err = templateLoader.LoadTemplate(); err != nil {
 		return
 	}
 
 	var byteValue []byte
-	if byteValue, err = o.LoadData(); err != nil {
+	if byteValue, err = templateDataLoader.LoadData(); err != nil {
 		return
 	}
 
-	if o.HasMultipleFiles {
-		err = o.generateMultipleFiles(tmpl, byteValue)
-	} else {
-		err = o.generateSingleFile(tmpl, byteValue)
-	}
-	return
-}
-
-func (o *Generator) generateMultipleFiles(tmpl *template.Template, byteValue []byte) (err error) {
-	var multiFileData MultipleFileData
-
-	if err = json.Unmarshal(byteValue, &multiFileData); err != nil {
-		return
-	}
-
-	for _, item := range multiFileData.Files {
-		var outputFile string
-		if outputFile, err = o.BuildFilePath(o.TemplateLabel(), o.DataLabel(), item.FileName); err != nil {
-			return
-		}
-
-		if err = generateFile(tmpl, outputFile, item.Data); err != nil {
-			return
-		}
-	}
-	return
-}
-
-func (o *Generator) generateSingleFile(tmpl *template.Template, byteValue []byte) (err error) {
 	var data interface{}
 	if err = json.Unmarshal(byteValue, &data); err != nil {
 		return
 	}
 	var outputFile string
-	if outputFile, err = o.BuildFilePathDynamic(o.TemplateLabel(), o.DataLabel()); err != nil {
+	if outputFile, err = o.BuildFilePathDynamic(
+		templateLoader.TemplateSource(), templateDataLoader.DataSource()); err != nil {
 		return
 	}
 	err = generateFile(tmpl, outputFile, data)
@@ -71,7 +59,7 @@ func (o *Generator) generateSingleFile(tmpl *template.Template, byteValue []byte
 }
 
 func generateFile(template *template.Template, outputFileName string, data interface{}) (err error) {
-	lg.LOG.Infof("generate '%v'", outputFileName)
+	lg.LOG.Infof("resolveAndGenerate '%v'", outputFileName)
 	if err = os.MkdirAll(path.Dir(outputFileName), os.ModePerm); err != nil {
 		return
 	}

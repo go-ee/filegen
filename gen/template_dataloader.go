@@ -5,11 +5,11 @@ import (
 )
 
 type TemplateDataLoader interface {
-	DataLabel() string
+	DataSource() string
 	LoadData() ([]byte, error)
 }
 
-func NewFileTDataLoader(dataFile string) *FileDataLoader {
+func NewFileDataLoader(dataFile string) *FileDataLoader {
 	return &FileDataLoader{
 		File: dataFile,
 	}
@@ -19,7 +19,7 @@ type FileDataLoader struct {
 	File string
 }
 
-func (o *FileDataLoader) DataLabel() string {
+func (o *FileDataLoader) DataSource() string {
 	return o.File
 }
 
@@ -30,9 +30,15 @@ func (o *FileDataLoader) LoadData() (ret []byte, err error) {
 	return
 }
 
-type MultipleFileData struct {
-	Files []struct {
-		FileName string
-		Data     interface{}
+type SingleNextProvider[T any] struct {
+	Item             T
+	alreadyDelivered bool
+}
+
+func (o *SingleNextProvider[T]) Next() (ret T) {
+	if !o.alreadyDelivered {
+		o.alreadyDelivered = true
+		ret = o.Item
 	}
+	return
 }
