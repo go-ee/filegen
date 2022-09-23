@@ -37,7 +37,7 @@ func CollectFilesRecursive(baseFile string) (ret []string, err error) {
 	fileName := filepath.Base(baseFile)
 	baseFolder := filepath.Dir(baseFile)
 	err = filepath.Walk(baseFolder, func(path string, info fs.FileInfo, err error) (walkErr error) {
-		if !info.IsDir() && info.Name() == fileName {
+		if err == nil && !info.IsDir() && info.Name() == fileName {
 			ret = append(ret, path)
 		}
 		return

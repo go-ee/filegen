@@ -51,12 +51,12 @@ var rootCmd = &cobra.Command{
 
 func generate() (err error) {
 	var templateProvider *gen.NextTemplateProvider
-	if templateProvider, err = gen.NewNextTemplateProvider(templateFiles, macrosTemplateFiles); err != nil {
+	if templateProvider, err = gen.NewNextTemplateProviderFromFiles(templateFiles, macrosTemplateFiles); err != nil {
 		return
 	}
 
 	var dataFiles []string
-	if dataFiles, err = collectDataFiles(); err != nil {
+	if dataFiles, err = CollectDataFiles(); err != nil {
 		return
 	}
 	templateDataProvider := &gen.ArrayNextProvider[gen.DataLoader]{
@@ -72,7 +72,7 @@ func generate() (err error) {
 	return
 }
 
-func collectDataFiles() (ret []string, err error) {
+func CollectDataFiles() (ret []string, err error) {
 	if dataFileRecursive {
 		ret, err = gen.CollectFilesRecursive(dataPath)
 	} else {

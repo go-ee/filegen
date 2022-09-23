@@ -19,17 +19,17 @@ type Generator struct {
 }
 
 func (o *Generator) Generate() (err error) {
-	templateLoader := o.NextTemplateLoader.Next()
-	for templateLoader != nil {
-		templateDataLoader := o.NextTemplateDataLoader.Next()
-		for templateDataLoader != nil {
+	templateDataLoader := o.NextTemplateDataLoader.Next()
+	for templateDataLoader != nil {
+		templateLoader := o.NextTemplateLoader.Next()
+		for templateLoader != nil {
 			if err = o.resolveAndGenerate(templateLoader, templateDataLoader); err != nil {
 				return
 			}
-			templateDataLoader = o.NextTemplateDataLoader.Next()
+			templateLoader = o.NextTemplateLoader.Next()
 		}
-		o.NextTemplateDataLoader.Reset()
-		templateLoader = o.NextTemplateLoader.Next()
+		templateDataLoader = o.NextTemplateDataLoader.Next()
+		o.NextTemplateLoader.Reset()
 	}
 	return
 }
