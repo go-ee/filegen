@@ -30,13 +30,14 @@ import (
 )
 
 var cfgFile string
-var dataFile string
+var dataPath string
+var dataFileName string
 var dataFileRecursive = false
 var templateFiles []string
 var macrosTemplateFiles []string
-var outputPath string
-var outputRelativeToData = false
-var outputRelativeToTemplate = false
+var outPath string
+var outRelativeToData = false
+var outRelativeToTemplate = false
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -63,7 +64,7 @@ func generate() (err error) {
 	}
 	generator := &gen.Generator{
 		FileNameBuilder: &gen.DefaultsFileNameBuilder{
-			OutputPath: outputPath, RelativeToTemplate: outputRelativeToTemplate, RelativeToData: outputRelativeToData},
+			OutputPath: outPath, RelativeToTemplate: outRelativeToTemplate, RelativeToData: outRelativeToData},
 		NextTemplateLoader:     templateProvider,
 		NextTemplateDataLoader: templateDataProvider,
 	}
@@ -73,9 +74,9 @@ func generate() (err error) {
 
 func collectDataFiles() (ret []string, err error) {
 	if dataFileRecursive {
-		ret, err = gen.CollectFilesRecursive(dataFile)
+		ret, err = gen.CollectFilesRecursive(dataPath)
 	} else {
-		ret = []string{dataFile}
+		ret = []string{dataPath}
 	}
 	return
 }
@@ -95,14 +96,14 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.filegen.yaml)")
 
 	_ = rootCmd.MarkPersistentFlagRequired(
-		FlagDataFile(rootCmd.PersistentFlags(), &dataFile))
+		FlagDataPath(rootCmd.PersistentFlags(), &dataPath))
 	_ = rootCmd.MarkPersistentFlagRequired(
 		FlagTemplateFiles(rootCmd.PersistentFlags(), &templateFiles))
 
 	FlagMacrosTemplatesFiles(rootCmd.PersistentFlags(), &macrosTemplateFiles)
 	FlagDataFileRecursive(rootCmd.PersistentFlags(), &dataFileRecursive)
 
-	FlagOutputPath(rootCmd.PersistentFlags(), &outputPath)
+	FlagOutputPath(rootCmd.PersistentFlags(), &outPath)
 }
 
 // initConfig reads in config file and ENV variables if set.

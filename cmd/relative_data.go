@@ -29,7 +29,7 @@ var relativeToDataCmd = &cobra.Command{
 	Use:   "relative-to-data",
 	Short: "generate files relative to data file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		outputRelativeToData = true
+		outRelativeToData = true
 		return generate()
 	},
 }

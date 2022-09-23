@@ -29,7 +29,7 @@ var relativeToTemplateCmd = &cobra.Command{
 	Use:   "relative-to-template",
 	Short: "generate files relative to template file",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		outputRelativeToTemplate = true
+		outRelativeToTemplate = true
 		return generate()
 	},
 }

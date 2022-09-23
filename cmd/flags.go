@@ -4,9 +4,9 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func FlagDataFile(flagSet *pflag.FlagSet, p *string) (flagName string) {
+func FlagDataPath(flagSet *pflag.FlagSet, p *string) (flagName string) {
 	flagName = "data"
-	flagSet.StringVarP(p, flagName, "d", "", "json or yaml data file")
+	flagSet.StringVarP(p, flagName, "d", "", "json or yaml data file or folder")
 	return
 }
 

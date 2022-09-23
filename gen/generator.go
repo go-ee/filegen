@@ -7,6 +7,7 @@ import (
 	"github.com/go-ee/utils/lg"
 	"os"
 	"path"
+	"strings"
 	"text/template"
 	"unicode"
 )
@@ -64,14 +65,31 @@ func generateFile(tmpl *template.Template, outputFileName string, data interface
 		return
 	}
 
+	perm := os.FileMode(0666)
+	if strings.HasSuffix(outputFileName, ".sh") {
+		perm |= 0111
+	}
+
 	var file *os.File
-	if file, err = os.Create(outputFileName); err != nil {
+	if file, err = os.OpenFile(outputFileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, perm); err != nil {
 		return
 	}
 	defer file.Close()
 
 	lg.LOG.Infof("generate: %v", outputFileName)
 	err = tmpl.Execute(file, data)
+
+	if strings.HasSuffix(outputFileName, ".sh") {
+		var info os.FileInfo
+		if info, err = os.Stat(outputFileName); err != nil {
+			return
+		}
+		mode := info.Mode()
+		if mode != perm {
+			err = os.Chmod(outputFileName, perm)
+		}
+	}
+
 	return
 }
 
