@@ -77,7 +77,9 @@ func generateFile(tmpl *template.Template, outputFileName string, data interface
 	defer file.Close()
 
 	lg.LOG.Infof("generate: %v", outputFileName)
-	err = tmpl.Execute(file, data)
+	if err = tmpl.Execute(file, data); err != nil {
+		return
+	}
 
 	if strings.HasSuffix(outputFileName, ".sh") {
 		var info os.FileInfo
@@ -89,7 +91,6 @@ func generateFile(tmpl *template.Template, outputFileName string, data interface
 			err = os.Chmod(outputFileName, perm)
 		}
 	}
-
 	return
 }
 

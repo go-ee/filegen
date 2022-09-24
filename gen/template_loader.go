@@ -89,8 +89,8 @@ func NewNextTemplateProviderFromText(
 	ret = &NextTemplateProvider{
 		macrosSources:    macrosSources,
 		templatesSources: templatesSources,
-		currentIndex:     0,
 		templatesNames:   names,
+		tmpl:             tmpl,
 	}
 	return
 }
