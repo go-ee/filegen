@@ -19,6 +19,7 @@ type Generator struct {
 }
 
 func (o *Generator) Generate() (err error) {
+	lg.LOG.Infof("generation started")
 	templateDataLoader := o.NextTemplateDataLoader.Next()
 	for templateDataLoader != nil {
 		templateLoader := o.NextTemplateLoader.Next()
@@ -31,6 +32,7 @@ func (o *Generator) Generate() (err error) {
 		templateDataLoader = o.NextTemplateDataLoader.Next()
 		o.NextTemplateLoader.Reset()
 	}
+	lg.LOG.Infof("generatarion completed")
 	return
 }
 

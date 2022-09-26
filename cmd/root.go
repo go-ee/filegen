@@ -30,8 +30,7 @@ import (
 )
 
 var cfgFile string
-var dataPath string
-var dataFileName string
+var dataFilePath string
 var dataFileRecursive = false
 var templateFiles []string
 var macrosTemplateFiles []string
@@ -74,9 +73,9 @@ func generate() (err error) {
 
 func CollectDataFiles() (ret []string, err error) {
 	if dataFileRecursive {
-		ret, err = gen.CollectFilesRecursive(dataPath)
+		ret, err = gen.CollectFilesRecursive(dataFilePath)
 	} else {
-		ret = []string{dataPath}
+		ret = []string{dataFilePath}
 	}
 	return
 }
@@ -93,10 +92,11 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.filegen.yaml)")
+	rootCmd.PersistentFlags().StringVar(
+		&cfgFile, "config", "", "config file (default is $HOME/.filegen.yaml)")
 
 	_ = rootCmd.MarkPersistentFlagRequired(
-		FlagDataPath(rootCmd.PersistentFlags(), &dataPath))
+		FlagDataPath(rootCmd.PersistentFlags(), &dataFilePath))
 	_ = rootCmd.MarkPersistentFlagRequired(
 		FlagTemplateFiles(rootCmd.PersistentFlags(), &templateFiles))
 

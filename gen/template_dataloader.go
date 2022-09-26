@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"github.com/go-ee/utils/lg"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -36,12 +37,14 @@ func CollectFilesRecursive(baseFile string) (ret []string, err error) {
 	ret = []string{}
 	fileName := filepath.Base(baseFile)
 	baseFolder := filepath.Dir(baseFile)
+	lg.LOG.Infof("collect '%v' files recursive in '%v'", fileName, baseFolder)
 	err = filepath.Walk(baseFolder, func(path string, info fs.FileInfo, err error) (walkErr error) {
 		if err == nil && !info.IsDir() && info.Name() == fileName {
 			ret = append(ret, path)
 		}
 		return
 	})
+	lg.LOG.Infof("%v - '%v' files collected recursive in '%v'", len(ret), fileName, baseFolder)
 	return
 }
 
