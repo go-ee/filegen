@@ -12,9 +12,9 @@ type FileNameBuilder interface {
 }
 
 type DefaultsFileNameBuilder struct {
-	OutputPath         string
-	RelativeToTemplate bool
-	RelativeToData     bool
+	RelativePathOrFullPath string
+	RelativeToTemplate     bool
+	RelativeToData         bool
 }
 
 func (o *DefaultsFileNameBuilder) BuildFilePathDynamic(
@@ -28,19 +28,17 @@ func (o *DefaultsFileNameBuilder) BuildFilePath(
 	templateSource string, templateDataSource string, fileName string) (ret string, err error) {
 
 	if o.RelativeToTemplate {
-		if o.OutputPath == "" {
-			ret = path.Dir(templateDataSource)
-		} else {
-			ret = filepath.Join(path.Dir(templateSource), o.OutputPath)
+		ret = path.Dir(templateSource)
+		if o.RelativePathOrFullPath != "" {
+			ret = filepath.Join(ret, o.RelativePathOrFullPath)
 		}
 	} else if o.RelativeToData {
-		if o.OutputPath == "" {
-			ret = path.Dir(templateDataSource)
-		} else {
-			ret = filepath.Join(path.Dir(templateDataSource), o.OutputPath)
+		ret = path.Dir(templateDataSource)
+		if o.RelativePathOrFullPath != "" {
+			ret = filepath.Join(ret, o.RelativePathOrFullPath)
 		}
 	} else {
-		ret, err = filepath.Abs(o.OutputPath)
+		ret, err = filepath.Abs(o.RelativePathOrFullPath)
 	}
 	ret = filepath.Join(ret, fileName)
 	return

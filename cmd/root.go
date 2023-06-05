@@ -63,7 +63,7 @@ func generate() (err error) {
 	}
 	generator := &gen.Generator{
 		FileNameBuilder: &gen.DefaultsFileNameBuilder{
-			OutputPath: outPath, RelativeToTemplate: outRelativeToTemplate, RelativeToData: outRelativeToData},
+			RelativePathOrFullPath: outPath, RelativeToTemplate: outRelativeToTemplate, RelativeToData: outRelativeToData},
 		NextTemplateLoader:     templateProvider,
 		NextTemplateDataLoader: templateDataProvider,
 	}
