@@ -34,16 +34,22 @@ func (o *JsonFileDataLoader) LoadData() (ret []byte, err error) {
 }
 
 func CollectFilesRecursive(baseFile string) (ret []string, err error) {
-	ret = []string{}
 	fileName := filepath.Base(baseFile)
 	baseFolder := filepath.Dir(baseFile)
+	m := map[string]bool{}
 	lg.LOG.Infof("collect '%v' files recursive in '%v'", fileName, baseFolder)
 	err = filepath.Walk(baseFolder, func(path string, info fs.FileInfo, err error) (walkErr error) {
 		if err == nil && !info.IsDir() && info.Name() == fileName {
-			ret = append(ret, path)
+			m[info.Name()] = true
 		}
 		return
 	})
+	i := 0
+	ret = make([]string, len(m))
+	for path := range m {
+		ret[i] = path
+		i++
+	}
 	lg.LOG.Infof("%v - '%v' files collected recursive in '%v'", len(ret), fileName, baseFolder)
 	return
 }
