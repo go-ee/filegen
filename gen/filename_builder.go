@@ -41,6 +41,6 @@ func (o *DefaultsFileNameBuilder) BuildFilePath(
 		ret, err = filepath.Abs(o.RelativePathOrFullPath)
 	}
 	ret = filepath.Join(ret, fileName)
-	lg.LOG.Debugf("BuildFilePath: ret=%v, templateSource=%v, dataSource=%v, fileName=%v, RelativeToTemplate=%v, RelativeToData=%v, RelativePathOrFullPath=%v", ret, templateSource, dataSource, fileName, o.RelativeToTemplate, o.RelativeToData, o.RelativePathOrFullPath)
+	lg.LOG.Infof("BuildFilePath: ret=%v, templateSource=%v, dataSource=%v, fileName=%v, RelativeToTemplate=%v, RelativeToData=%v, RelativePathOrFullPath=%v", ret, templateSource, dataSource, fileName, o.RelativeToTemplate, o.RelativeToData, o.RelativePathOrFullPath)
 	return
 }
