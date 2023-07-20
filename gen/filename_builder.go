@@ -1,8 +1,6 @@
 package gen
 
 import (
-	"github.com/go-ee/utils/lg"
-	"path"
 	"path/filepath"
 	"strings"
 )
@@ -28,12 +26,12 @@ func (o *DefaultsFileNameBuilder) BuildFilePathDynamic(
 func (o *DefaultsFileNameBuilder) BuildFilePath(
 	templateSource string, dataSource string, fileName string) (ret string, err error) {
 	if o.RelativeToTemplate {
-		ret = path.Dir(templateSource)
+		ret = filepath.Dir(templateSource)
 		if o.RelativePathOrFullPath != "" {
 			ret = filepath.Join(ret, o.RelativePathOrFullPath)
 		}
 	} else if o.RelativeToData {
-		ret = path.Dir(dataSource)
+		ret = filepath.Dir(dataSource)
 		if o.RelativePathOrFullPath != "" {
 			ret = filepath.Join(ret, o.RelativePathOrFullPath)
 		}
@@ -41,6 +39,5 @@ func (o *DefaultsFileNameBuilder) BuildFilePath(
 		ret, err = filepath.Abs(o.RelativePathOrFullPath)
 	}
 	ret = filepath.Join(ret, fileName)
-	lg.LOG.Infof("BuildFilePath: ret=%v, templateSource=%v, dataSource=%v, fileName=%v, RelativeToTemplate=%v, RelativeToData=%v, RelativePathOrFullPath=%v", ret, templateSource, dataSource, fileName, o.RelativeToTemplate, o.RelativeToData, o.RelativePathOrFullPath)
 	return
 }
